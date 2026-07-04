@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursion — Your Coding Mentor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blueprint: #0B3D5C;
+    --blueprint-deep: #082C44;
+    --paper: #F5F1E8;
+    --line: rgba(245,241,232,0.16);
+    --line-strong: rgba(245,241,232,0.32);
+    --amber: #E8A33D;
+    --teal: #4FA89B;
+    --coral: #E36F5C;
+    --text-dim: rgba(245,241,232,0.62);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--line) 1px, transparent 1px) 0 0/32px 32px,
+      linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0/32px 32px,
+      var(--blueprint);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    padding:28px 32px 22px;
+    border-bottom:1px solid var(--line-strong);
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+  }
+  .brand h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:30px;
+    margin:0;
+    letter-spacing:0.2px;
+  }
+  .brand .tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--amber);
+    border:1px solid rgba(232,163,61,0.45);
+    padding:3px 9px;
+    border-radius:2px;
+    letter-spacing:0.06em;
+  }
+  header p{
+    margin:0;
+    font-size:13px;
+    color:var(--text-dim);
+    font-family:'JetBrains Mono', monospace;
+  }
+
+  /* ---------- Layout ---------- */
+  .wrap{
+    display:grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap:0;
+    min-height:calc(100vh - 96px);
+  }
+  @media (max-width: 880px){
+    .wrap{ grid-template-columns: 1fr; }
+  }
+
+  .panel{ padding:26px 30px; }
+  .left{ border-right:1px solid var(--line-strong); }
+
+  .section-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin:0 0 12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-label::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:var(--line-strong);
+  }
+
+  textarea#codeInput{
+    width:100%;
+    min-height:260px;
+    resize:vertical;
+    background:var(--blueprint-deep);
+    border:1px solid var(--line-strong);
+    border-radius:3px;
+    color:var(--paper);
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    line-height:1.6;
+    padding:16px;
+    outline:none;
+  }
+  textarea#codeInput:focus{ border-color:var(--amber); }
+  textarea#codeInput::placeholder{ color:var(--text-dim); }
+
+  .lang-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:12px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--text-dim);
+  }
+  select#langSelect{
+    background:var(--blueprint-deep);
+    color:var(--paper);
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    padding:5px 8px;
+  }
+
+  .actions{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-top:20px;
+  }
+  .action-btn{
+    background:transparent;
+    border:1px solid var(--line-strong);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:500;
+    padding:12px 10px;
+    border-radius:3px;
+    cursor:pointer;
+    text-align:left;
+    transition:border-color .15s, background .15s;
+    position:relative;
+  }
+  .action-btn small{
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    color:var(--text-dim);
+    margin-top:3px;
+  }
+  .action-btn:hover{ border-color:var(--amber); background:rgba(232,163,61,0.06); }
+  .action-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .note{
+    margin-top:22px;
+    font-size:12px;
+    color:var(--text-dim);
+    line-height:1.6;
+    border-left:2px solid var(--teal);
+    padding-left:12px;
+  }
+
+  /* ---------- Right: conversation ---------- */
+  .right{ display:flex; flex-direction:column; }
+  #chatArea{
+    flex:1;
+    overflow-y:auto;
+    max-height:calc(100vh - 260px);
+    padding-right:4px;
+  }
+  .empty-state{
+    color:var(--text-dim);
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    line-height:1.8;
+    padding:20px 0;
+  }
+
+  .bubble{
+    margin-bottom:18px;
+    position:relative;
+    padding-left:22px;
+  }
+  .bubble::before{
+    content:'';
+    position:absolute;
+    left:0; top:6px;
+    width:10px; height:10px;
+    border:1.5px solid var(--amber);
+    border-radius:50%;
+  }
+  .bubble.user::before{ border-color:var(--teal); }
+  .bubble .who{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin-bottom:5px;
+  }
+  .bubble.user .who{ color:var(--teal); }
+  .bubble .msg{
+    font-family:'Fraunces', serif;
+    font-size:15.5px;
+    line-height:1.65;
+    color:var(--paper);
+    white-space:pre-wrap;
+  }
+  .bubble.user .msg{ font-family:'Inter', sans-serif; font-size:14px; color:rgba(245,241,232,0.9); }
+  .bubble .msg code, .bubble .msg pre{
+    font-family:'JetBrains Mono', monospace;
+    background:var(--blueprint-deep);
+    border:1px solid var(--line-strong);
+    border-radius:3px;
+  }
+  .bubble .msg code{ padding:1px 5px; font-size:0.85em; }
+  .bubble .msg pre{ padding:12px; overflow-x:auto; font-size:12.5px; display:block; margin:8px 0; }
+
+  .typing{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--amber);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .dot{ width:5px; height:5px; border-radius:50%; background:var(--amber); animation:blink 1.2s infinite ease-in-out; }
+  .dot:nth-child(2){ animation-delay:.2s; }
+  .dot:nth-child(3){ animation-delay:.4s; }
+  @keyframes blink{ 0%,80%,100%{opacity:.25;} 40%{opacity:1;} }
+
+  .composer{
+    margin-top:16px;
+    border-top:1px solid var(--line-strong);
+    padding-top:16px;
+    display:flex;
+    gap:10px;
+    align-items:flex-end;
+  }
+  textarea#chatInput{
+    flex:1;
+    background:var(--blueprint-deep);
+    border:1px solid var(--line-strong);
+    border-radius:3px;
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;
+    padding:11px 13px;
+    resize:none;
+    min-height:44px;
+    max-height:120px;
+    outline:none;
+  }
+  textarea#chatInput:focus{ border-color:var(--amber); }
+  button#sendBtn{
+    background:var(--amber);
+    color:var(--blueprint-deep);
+    border:none;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:13px;
+    padding:12px 18px;
+    border-radius:3px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  button#sendBtn:hover{ filter:brightness(1.08); }
+  button#sendBtn:disabled{ opacity:.4; cursor:not-allowed; }
+
+  ::-webkit-scrollbar{ width:8px; }
+  ::-webkit-scrollbar-thumb{ background:var(--line-strong); border-radius:4px; }
+
+  /* ---------- Theme switcher ---------- */
+  .theme-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .theme-row span{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--text-dim);
+  }
+  .swatch{
+    width:20px; height:20px;
+    border-radius:50%;
+    border:2px solid var(--line-strong);
+    cursor:pointer;
+    padding:0;
+  }
+  .swatch.active{ border-color:var(--paper); }
+
+  .pdf-btn{
+    margin-left:14px;
+    background:transparent;
+    border:1px solid var(--line-strong);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    font-weight:500;
+    padding:6px 12px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .pdf-btn:hover{ border-color:var(--amber); background:rgba(232,163,61,0.06); }
+
+  /* ---------- Print / PDF export ---------- */
+  @media print{
+    body{ background:#fff !important; color:#111 !important; }
+    header, .left, .composer, .pdf-btn, .theme-row, #progressBtn, #progressPanel { display:none !important; }
+    .wrap{ display:block !important; min-height:auto !important; }
+    .panel.right{ padding:0 !important; }
+    #chatArea{ max-height:none !important; overflow:visible !important; }
+    .bubble .who{ color:#B5790A !important; }
+    .bubble.user .who{ color:#1F7A6C !important; }
+    .bubble .msg{ color:#111 !important; }
+    .bubble .msg pre, .bubble .msg code{ background:#f2f2f2 !important; border-color:#ccc !important; color:#111 !important; }
+    .save-btn{ display:none !important; }
+  }
+
+  /* ---------- Saved snippets ---------- */
+  .snippet-item{
+    border:1px solid var(--line-strong);
+    border-radius:3px;
+    padding:10px 12px;
+    margin-top:10px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+  }
+  .snippet-item .snip-title{
+    color:var(--amber);
+    margin-bottom:4px;
+    word-break:break-word;
+  }
+  .snippet-item .snip-code{
+    color:var(--text-dim);
+    max-height:60px;
+    overflow:hidden;
+    white-space:pre-wrap;
+    margin-bottom:8px;
+  }
+  .snip-actions{ display:flex; gap:8px; }
+  .snip-actions button{
+    background:transparent;
+    border:1px solid var(--line-strong);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    font-size:11px;
+    padding:4px 9px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .snip-actions button:hover{ border-color:var(--amber); }
+  .save-btn{
+    margin-top:8px;
+    background:transparent;
+    border:1px solid var(--teal);
+    color:var(--teal);
+    font-family:'Inter', sans-serif;
+    font-size:11.5px;
+    font-weight:500;
+    padding:5px 10px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .save-btn:hover{ background:rgba(79,168,155,0.1); }
+
+  .progress-summary{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--text-dim);
+    margin-bottom:12px;
+  }
+  .progress-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:9px;
+    font-size:12.5px;
+  }
+  .progress-row .label{
+    width:78px;
+    flex-shrink:0;
+    text-transform:capitalize;
+    color:var(--paper);
+  }
+  .progress-track{
+    flex:1;
+    height:8px;
+    background:var(--blueprint-deep);
+    border:1px solid var(--line-strong);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--amber);
+  }
+  .progress-count{
+    width:22px;
+    text-align:right;
+    color:var(--text-dim);
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Recursion</h1>
+    <span class="tag">coding mentor agent</span>
+  </div>
+  <p>// paste code, ask questions, get mentored — not just answers</p>
+  <p id="dbStats" style="margin-top:4px; color:var(--teal);">💾 loading database stats...</p>
+  <div class="theme-row">
+    <span>theme</span>
+    <button class="swatch active" data-theme="blueprint" style="background:#0B3D5C;" title="Blueprint"></button>
+    <button class="swatch" data-theme="ink" style="background:#1A1A1A;" title="Ink"></button>
+    <button class="swatch" data-theme="forest" style="background:#0F3D2E;" title="Forest"></button>
+    <button class="swatch" data-theme="maroon" style="background:#4A1420;" title="Maroon"></button>
+    <button id="exportPdfBtn" class="pdf-btn">📄 Export as PDF</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel left">
+    <p class="section-label">your code</p>
+    <textarea id="codeInput" placeholder="Paste your code here...
+
+e.g.
+
+def fib(n):
+    if n <= 1:
+        return n
+    return fib(n) + fib(n-1)"></textarea>
+
+    <div class="lang-row">
+      <span>language</span>
+      <select id="langSelect">
+        <option value="auto">auto-detect</option>
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="java">Java</option>
+        <option value="c">C</option>
+        <option value="cpp">C++</option>
+        <option value="sql">SQL</option>
+        <option value="html">HTML/CSS</option>
+      </select>
+    </div>
+
+    <p class="section-label" style="margin-top:24px;">ask recursion to</p>
+    <div class="actions">
+      <button class="action-btn" data-action="explain">Explain
+        <small>walk through logic</small>
+      </button>
+      <button class="action-btn" data-action="debug">Find bugs
+        <small>spot issues</small>
+      </button>
+      <button class="action-btn" data-action="optimize">Optimize
+        <small>improve efficiency</small>
+      </button>
+      <button class="action-btn" data-action="review">Review style
+        <small>best practices</small>
+      </button>
+    </div>
+
+    <p class="note">Recursion won't just fix your code — it explains the "why" behind every suggestion, like a mentor would. Use the chat on the right for follow-up questions.</p>
+
+    <p class="section-label" style="margin-top:24px;">your growth</p>
+    <button id="progressBtn" class="action-btn" style="width:100%; text-align:center;">📊 My Progress
+      <small>see what recursion has taught you</small>
+    </button>
+    <div id="progressPanel" style="display:none; margin-top:14px;"></div>
+
+    <p class="section-label" style="margin-top:24px;">saved snippets</p>
+    <div id="snippetList"><p class="note" style="margin-top:0;">Corrected code you save from the chat shows up here.</p></div>
+  </div>
+
+  <div class="panel right">
+    <p class="section-label">conversation</p>
+    <div id="chatArea">
+      <div class="empty-state" id="emptyState">$ waiting for input...
+&gt; paste code on the left and pick an action,
+&gt; or just start typing a question below.</div>
+    </div>
+
+    <div class="composer">
+      <textarea id="chatInput" placeholder="Ask a coding question..." rows="1"></textarea>
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const chatArea = document.getElementById('chatArea');
+const emptyState = document.getElementById('emptyState');
+const codeInput = document.getElementById('codeInput');
+const langSelect = document.getElementById('langSelect');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+const actionBtns = document.querySelectorAll('.action-btn');
+let history = [];
+let busy = false;
+const sessionId = crypto.randomUUID();
+
+function escapeHtml(str){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatMessage(text){
+  let escaped = escapeHtml(text);
+  escaped = escaped.replace(/```([\s\S]*?)```/g, (m, code) => `<pre>${code.trim()}</pre>`);
+  escaped = escaped.replace(/`([^`]+)`/g, '<code>$1</code>');
+  return escaped;
+}
+
+function addBubble(who, text, isUser){
+  emptyState.style.display = 'none';
+  const div = document.createElement('div');
+  div.className = 'bubble' + (isUser ? ' user' : '');
+  div.innerHTML = `<div class="who">${who}</div><div class="msg">${formatMessage(text)}</div>`;
+
+  if(!isUser){
+    const codeBlocks = [...text.matchAll(/```([\s\S]*?)```/g)].map(m => m[1].trim());
+    if(codeBlocks.length > 0){
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'save-btn';
+      saveBtn.textContent = '💾 Save this code';
+      saveBtn.addEventListener('click', () => saveSnippet(codeBlocks[0], saveBtn));
+      div.appendChild(saveBtn);
+    }
+  }
+
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  return div;
+}
+
+function showTyping(){
+  emptyState.style.display = 'none';
+  const div = document.createElement('div');
+  div.className = 'bubble';
+  div.id = 'typingBubble';
+  div.innerHTML = `<div class="who">recursion</div><div class="typing">thinking<span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function removeTyping(){
+  const t = document.getElementById('typingBubble');
+  if(t) t.remove();
+}
+
+async function callMentor(userMessage, action, language){
+  if(busy) return;
+  busy = true;
+  sendBtn.disabled = true;
+  actionBtns.forEach(b => b.disabled = true);
+
+  addBubble('you', userMessage, true);
+  history.push({ role: 'user', content: userMessage });
+  showTyping();
+
+  try{
+    const response = await fetch("/api/mentor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: history, sessionId, action: action || 'chat', language: language || null })
+    });
+    const data = await response.json();
+    removeTyping();
+
+    if(!data.success){
+      addBubble('recursion', "Error: " + (data.error || "something went wrong reaching the mentor engine."), false);
+      history.pop();
+      return;
+    }
+
+    const reply = data.reply || "I couldn't generate a response just now. Try rephrasing your question, or check your code snippet.";
+    addBubble('recursion', reply, false);
+    history.push({ role: 'assistant', content: reply });
+    refreshStats();
+  }catch(err){
+    removeTyping();
+    addBubble('recursion', "Couldn't reach the server. Make sure the backend (node server.js) is running.", false);
+    console.error(err);
+  }finally{
+    busy = false;
+    sendBtn.disabled = false;
+    actionBtns.forEach(b => b.disabled = false);
+  }
+}
+
+sendBtn.addEventListener('click', () => {
+  const val = chatInput.value.trim();
+  if(!val) return;
+  chatInput.value = '';
+  chatInput.style.height = 'auto';
+  callMentor(val, 'chat', langSelect.value === 'auto' ? null : langSelect.value);
+});
+
+chatInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendBtn.click();
+  }
+});
+
+chatInput.addEventListener('input', () => {
+  chatInput.style.height = 'auto';
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+});
+
+actionBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const code = codeInput.value.trim();
+    if(!code){
+      addBubble('recursion', "Paste some code on the left first, then I can " + btn.dataset.action + " it for you.", false);
+      return;
+    }
+    const lang = langSelect.value === 'auto' ? '' : ` (${langSelect.value})`;
+    const actionText = {
+      explain: `Explain what this code${lang} does, step by step:\n\n\`\`\`\n${code}\n\`\`\``,
+      debug: `Find and explain any bugs or issues in this code${lang}:\n\n\`\`\`\n${code}\n\`\`\``,
+      optimize: `Suggest ways to optimize this code${lang} for performance or clarity, and explain why:\n\n\`\`\`\n${code}\n\`\`\``,
+      review: `Review this code${lang} for style and best practices, like a mentor giving feedback:\n\n\`\`\`\n${code}\n\`\`\``
+    }[btn.dataset.action];
+    callMentor(actionText, btn.dataset.action, langSelect.value === 'auto' ? null : langSelect.value);
+  });
+});
+
+async function refreshStats(){
+  try{
+    const res = await fetch('/api/stats');
+    const data = await res.json();
+    const el = document.getElementById('dbStats');
+    if(data.success){
+      el.textContent = `💾 ${data.total} messages logged in database (SQLite)`;
+    }else{
+      el.textContent = '💾 database stats unavailable';
+    }
+  }catch(err){
+    document.getElementById('dbStats').textContent = '💾 could not reach database';
+  }
+}
+refreshStats();
+
+const progressBtn = document.getElementById('progressBtn');
+const progressPanel = document.getElementById('progressPanel');
+let progressOpen = false;
+
+progressBtn.addEventListener('click', async () => {
+  progressOpen = !progressOpen;
+  if(!progressOpen){
+    progressPanel.style.display = 'none';
+    return;
+  }
+  progressPanel.style.display = 'block';
+  progressPanel.innerHTML = `<p class="progress-summary">loading your progress...</p>`;
+
+  try{
+    const res = await fetch(`/api/insights?sessionId=${encodeURIComponent(sessionId)}`);
+    const data = await res.json();
+
+    if(!data.success || data.total === 0){
+      progressPanel.innerHTML = `<p class="progress-summary">No questions logged yet this session — ask Recursion something first, then check back here.</p>`;
+      return;
+    }
+
+    const maxCount = Math.max(...data.byAction.map(a => a.count));
+    const rows = data.byAction.map(a => {
+      const pct = Math.round((a.count / maxCount) * 100);
+      return `
+        <div class="progress-row">
+          <span class="label">${a.action}</span>
+          <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <span class="progress-count">${a.count}</span>
+        </div>`;
+    }).join('');
+
+    const langLine = data.topLanguage
+      ? `Most active language: <strong style="color:var(--amber);">${data.topLanguage}</strong>`
+      : `No specific language pinned yet — try selecting one before asking.`;
+
+    progressPanel.innerHTML = `
+      <p class="progress-summary">${data.total} question${data.total === 1 ? '' : 's'} asked this session</p>
+      ${rows}
+      <p class="progress-summary" style="margin-top:12px;">${langLine}</p>
+    `;
+  }catch(err){
+    progressPanel.innerHTML = `<p class="progress-summary">Couldn't load progress data.</p>`;
+    console.error(err);
+  }
+});
+
+// ---------- Saved snippets ----------
+const snippetList = document.getElementById('snippetList');
+
+async function saveSnippet(code, btnEl){
+  const title = prompt("Name this snippet (optional):", "") || "Untitled snippet";
+  try{
+    const res = await fetch('/api/snippets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, title, code })
+    });
+    const data = await res.json();
+    if(data.success){
+      btnEl.textContent = '✅ Saved';
+      btnEl.disabled = true;
+      loadSnippets();
+    }
+  }catch(err){
+    console.error(err);
+  }
+}
+
+async function loadSnippets(){
+  try{
+    const res = await fetch(`/api/snippets?sessionId=${encodeURIComponent(sessionId)}`);
+    const data = await res.json();
+    if(!data.success || data.snippets.length === 0){
+      snippetList.innerHTML = `<p class="note" style="margin-top:0;">Corrected code you save from the chat shows up here.</p>`;
+      return;
+    }
+    snippetList.innerHTML = data.snippets.map(s => `
+      <div class="snippet-item" data-id="${s.id}">
+        <div class="snip-title">${escapeHtml(s.title)}</div>
+        <div class="snip-code">${escapeHtml(s.code.slice(0, 160))}</div>
+        <div class="snip-actions">
+          <button class="load-snip">Load into editor</button>
+          <button class="delete-snip">Delete</button>
+        </div>
+      </div>
+    `).join('');
+
+    snippetList.querySelectorAll('.snippet-item').forEach(item => {
+      const id = item.dataset.id;
+      const snippet = data.snippets.find(s => String(s.id) === id);
+      item.querySelector('.load-snip').addEventListener('click', () => {
+        codeInput.value = snippet.code;
+        codeInput.scrollIntoView({ behavior: 'smooth' });
+      });
+      item.querySelector('.delete-snip').addEventListener('click', async () => {
+        await fetch(`/api/snippets/${id}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId })
+        });
+        loadSnippets();
+      });
+    });
+  }catch(err){
+    console.error(err);
+  }
+}
+loadSnippets();
+
+// ---------- Theme switcher (changes background colors only) ----------
+const THEMES = {
+  blueprint: { blueprint: '#0B3D5C', deep: '#082C44' },
+  ink:       { blueprint: '#1A1A1A', deep: '#101010' },
+  forest:    { blueprint: '#0F3D2E', deep: '#0A2B20' },
+  maroon:    { blueprint: '#4A1420', deep: '#330D16' }
+};
+
+document.querySelectorAll('.swatch').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const theme = THEMES[btn.dataset.theme];
+    document.documentElement.style.setProperty('--blueprint', theme.blueprint);
+    document.documentElement.style.setProperty('--blueprint-deep', theme.deep);
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// ---------- Export conversation as PDF ----------
+document.getElementById('exportPdfBtn').addEventListener('click', () => {
+  if(emptyState.style.display !== 'none' && chatArea.children.length <= 1){
+    alert("Ask Recursion something first — there's no conversation yet to export.");
+    return;
+  }
+  window.print();
+});
+</script>
+
+</body>
+</html>
